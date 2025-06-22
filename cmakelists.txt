@@ -1,0 +1,46 @@
+cmake_minimum_required(VERSION 3.12)
+project(SafeQueueDemo LANGUAGES CXX)
+
+# Set C++ standard (C++17 required for std::scoped_lock and other features)
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
+# Find GTest package
+find_package(GTest REQUIRED)
+find_package(Threads REQUIRED)
+
+# Create a library target for the safe_queue implementation
+add_library(enqueue 
+    enqueue.h
+    enqueue.cpp
+)
+
+# Make the headers available to other targets
+target_include_directories(enqueue PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+# Create the demo executable
+add_executable(enqueue_demo main.cpp)
+
+# Link the safe_queue library to the demo
+target_link_libraries(enqueue_demo PRIVATE enqueue Threads::Threads)
+
+# Enable testing
+enable_testing()
+
+# Create test executable
+add_executable(enqueue_tests
+    tests/enqueue_tests.cpp
+)
+
+# Link test executable with GTest and our library
+target_link_libraries(enqueue_tests
+    PRIVATE
+    enqueue
+    GTest::GTest
+    GTest::Main
+    Threads::Threads
+)
+
+# Add test
+add_test(NAME enqueue_tests COMMAND enqueue_tests)
